@@ -34,7 +34,7 @@ _security = LocalProxy(lambda: current_app.extensions['security'])
 _datastore = LocalProxy(lambda: _security.datastore)
 
 
-def _render_json(form, include_user=True, include_auth_token=False):
+def _render_json(form, include_user=True, include_auth_token=False, include_token_expiry=False):
     has_errors = len(form.errors) > 0
 
     if has_errors:
@@ -48,6 +48,9 @@ def _render_json(form, include_user=True, include_auth_token=False):
         if include_auth_token:
             token = form.user.get_auth_token()
             response['user']['authentication_token'] = token
+        if include_token_expiry and config_value('SECURITY_TOKEN_MAX_AGE'):
+            response['user']['token_expiry_age'] = config_value(
+                'SECURITY_TOKEN_MAX_AGE')
 
     return jsonify(dict(meta=dict(code=code), response=response))
 
